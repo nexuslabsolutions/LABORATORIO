@@ -1,0 +1,9 @@
+{
+  "name": "laboratorio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pagine HTML e strumenti interattivi di nexuslabsolutions",
+  "scripts": {
+    "test": "node tests/tir-van.test.cjs"
+  }
+}
