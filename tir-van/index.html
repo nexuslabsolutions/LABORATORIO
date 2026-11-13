@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Inserisci investimento e flussi di cassa. Costruisci il grafico del VAN, trova il TIR e segui l’interpolazione lineare passo per passo.">
+<meta name="theme-color" content="#142e49">
+<title>Laboratorio TIR e VAN — Grafico interattivo</title>
+<style>
+:root{--navy:#142e49;--ink:#182f45;--muted:#627387;--line:#dce3eb;--paper:#f4f6f9;--blue:#2464ad;--orange:#bb651f;--green:#176855;--white:#fff;--soft-blue:#eef4fb;--soft-orange:#fff4e9;--error:#ac2c37;--radius:16px;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--paper);font-synthesis:none}
+*{box-sizing:border-box}body{margin:0;font-size:16px;line-height:1.5}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}input,select,button,a{ -webkit-tap-highlight-color:transparent}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #79a8e0;outline-offset:3px}button,input,select{border-radius:9px}input,select{width:100%;min-height:46px;border:1px solid #c5d0dc;background:#fff;color:var(--ink);padding:10px 12px;font-size:17px;font-variant-numeric:tabular-nums}input:disabled{background:#f2f5f8;color:#657487}input[type=checkbox]{width:19px;min-height:19px;height:19px;accent-color:var(--blue);margin:0}input[aria-invalid=true]{border-color:var(--error)}label{display:block;font-weight:600;font-size:15px;margin-bottom:6px}small,.small{font-size:13px;line-height:1.5}.muted{color:var(--muted)}.tabular{font-variant-numeric:tabular-nums}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}[hidden]{display:none!important}
+.topbar{background:var(--navy);color:#fff}.topbar-inner{max-width:1540px;margin:auto;padding:20px 32px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:flex;align-items:center;gap:13px}.brand-mark{display:grid;place-items:center;width:46px;height:46px;border:1px solid #6b849d;border-radius:11px;font-weight:700;letter-spacing:-1px}.brand-name{font-size:18px;font-weight:650}.brand-sub{color:#b6c8da;font-size:13px}.header-actions{display:flex;gap:9px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);padding:10px 15px;min-height:42px;background:white;color:var(--ink);font-size:14px;font-weight:600;text-decoration:none;white-space:nowrap}.btn:hover{background:#f2f6fa;border-color:#bac9d8}.btn-light{border-color:#607991;background:transparent;color:white}.btn-light:hover{background:#24425e;border-color:#8da5bc}.btn-primary{background:var(--navy);color:#fff;border-color:var(--navy)}.btn-primary:hover{background:#23476b;color:white}.btn-text{border:0;background:none;color:var(--blue);padding:5px 0;font-size:14px;font-weight:600}.btn-text:hover{text-decoration:underline}.btn-small{min-height:36px;padding:7px 11px;font-size:13px}
+main{max-width:1540px;margin:auto;padding:33px 32px 44px}.intro{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:26px}.eyebrow{font-size:12px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);margin:0 0 8px}h1{font-size:clamp(27px,3vw,37px);line-height:1.18;letter-spacing:-.9px;margin:0 0 10px;font-weight:680}h2{font-size:19px;line-height:1.3;margin:0;font-weight:650;letter-spacing:-.2px}h3{font-size:16px;margin:0 0 9px}.intro p{margin:0;max-width:780px;color:var(--muted);font-size:16px}.example-button{align-self:center;flex-shrink:0}.layout{display:grid;grid-template-columns:318px minmax(0,1fr);gap:24px;align-items:start}.sidebar{display:grid;gap:16px}.panel{background:white;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}.panel-head{padding:21px 23px 0}.panel-head p{margin:6px 0 0;color:var(--muted);font-size:14px}.panel-body{padding:23px}.section-number{font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}.field{margin-bottom:18px}.field:last-child{margin-bottom:0}.input-unit{display:flex;align-items:center;position:relative}.input-unit input{padding-right:42px}.input-unit span{position:absolute;right:13px;color:var(--muted);font-size:14px;pointer-events:none}.help{margin:6px 0 0;color:var(--muted);font-size:13px}.cashflow-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:23px 0 12px;padding-top:21px;border-top:1px solid var(--line)}.cashflow-head strong{font-size:15px}.count{font-size:12px;background:var(--soft-blue);padding:3px 8px;border-radius:20px;color:var(--blue)}.flow-list{display:grid;gap:12px}.flow-row{display:grid;grid-template-columns:1fr 31px;gap:6px;align-items:end}.flow-row label{font-weight:500;font-size:14px}.flow-row input{font-size:17px}.remove-flow{width:31px;height:45px;border:0;color:#75869a;background:transparent;font-size:23px;line-height:1;padding:0}.remove-flow:hover{color:var(--error);background:#fff0f0}.add-flow{width:100%;margin:16px 0 0;border-style:dashed;color:var(--blue);border-color:#b7c9dc;background:#f8fbff}.side-note{padding:17px 19px;border:1px solid #d6e3f1;border-radius:13px;background:var(--soft-blue);color:#47617a;font-size:13px;line-height:1.6}.side-note strong{color:var(--navy)}.workspace{display:grid;gap:21px;min-width:0}.validation{border:1px solid #e7b5b8;background:#fff3f3;color:#922333;padding:13px 16px;border-radius:11px;font-size:14px;margin-bottom:16px}.paused{opacity:.55}.paused .chart-wrap{pointer-events:none}
+.metrics{display:grid;grid-template-columns:1fr 1.05fr 1fr;border:1px solid var(--line);background:white;border-radius:var(--radius);overflow:hidden}.metric{padding:18px 22px;min-width:0}.metric+.metric{border-left:1px solid var(--line)}.metric-name{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:9px;display:block}.metric-value{font-size:clamp(23px,2.35vw,31px);line-height:1.2;letter-spacing:-.7px;white-space:normal;word-break:break-word;font-weight:660;font-variant-numeric:tabular-nums}.metric-sub{display:block;margin-top:8px;font-size:12px;line-height:1.5;color:var(--muted)}.metric-focus{background:var(--navy);color:white}.metric-focus .metric-name,.metric-focus .metric-sub{color:#c0d1e2}.metric-value.positive{color:var(--green)}.metric-value.negative{color:var(--error)}.metric-focus .metric-value{color:white}.metric .root-select{margin-top:11px;min-height:35px;padding:5px 8px;font-size:13px}.chart-panel .panel-head{display:flex;align-items:start;justify-content:space-between;gap:20px}.step-switch{display:flex;gap:6px;padding:20px 23px 0;flex-wrap:wrap}.step-btn{flex:1;min-width:100px;padding:10px 9px;border:1px solid var(--line);background:white;color:var(--muted);font-size:14px;font-weight:550}.step-btn[aria-pressed=true]{background:var(--navy);color:white;border-color:var(--navy)}.step-btn:hover:not([aria-pressed=true]){background:var(--soft-blue);color:var(--navy)}.chart-wrap{position:relative;padding:13px 15px 0;min-height:400px}.chart-wrap svg{display:block;width:100%;height:420px;touch-action:pan-y}.chart-tooltip{position:absolute;z-index:5;max-width:220px;background:var(--navy);color:white;padding:11px 14px;border-radius:9px;pointer-events:none;font-size:13px;box-shadow:0 4px 20px #142e4920;font-variant-numeric:tabular-nums}.chart-tooltip strong{display:block;margin-bottom:3px}.legend{display:flex;gap:20px;flex-wrap:wrap;padding:0 23px 17px;font-size:12px;color:var(--muted);align-items:center}.legend span{display:flex;align-items:center;gap:7px}.swatch{width:25px;border-top:3px solid var(--blue);display:inline-block}.swatch.interp{border-top-color:var(--orange);border-top-style:dashed}.swatch.zero{border-top:1px solid #738295}.chart-scale{padding:15px 23px;border-top:1px solid var(--line);display:flex;gap:14px;align-items:end;flex-wrap:wrap;background:#fafbfd}.scale-label{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:500;min-height:42px;margin:0 6px 0 0}.compact-field{width:102px}.compact-field label{font-size:12px;font-weight:500;margin-bottom:4px}.compact-field input{font-size:14px;min-height:39px;padding:8px 10px}.scale-status{color:var(--muted);font-size:12px;margin-left:auto;align-self:center;max-width:250px}.stage-explanation{padding:17px 23px 20px;border-top:1px solid var(--line);font-size:14px;line-height:1.65;color:#486077}.stage-explanation strong{color:var(--navy)}
+.formula-panel{padding:21px 23px}.formula-scroll{overflow-x:auto;padding:19px 4px 13px;margin-top:5px}.formula-scroll math{font-size:22px;white-space:nowrap;min-width:max-content;margin:0 auto}.formula-panel p{font-size:13px;color:var(--muted);margin:8px 0 0}.formula-panel .scroll-hint{font-size:12px;margin-top:0}.below-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:21px}.form-row{display:flex;gap:14px;align-items:end;flex-wrap:wrap}.form-row .field{flex:1;min-width:90px;margin:0}.test-rate{display:flex;align-items:center;gap:10px}.test-rate input{max-width:120px}.test-rate label{font-size:13px;min-width:0;font-weight:500;margin:0}.table-wrap{overflow-x:auto;margin-top:15px}.data-table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums;text-align:right}.data-table th{font-size:12px;line-height:1.35;font-weight:600;color:var(--muted);padding:11px 12px;background:#f5f7fa;border-bottom:1px solid var(--line)}.data-table td{padding:11px 12px;border-bottom:1px solid #edf0f4;white-space:nowrap}.data-table th:first-child,.data-table td:first-child{text-align:left}.data-table tr:last-child td{border-bottom:0}.data-table tbody tr.selectable{cursor:pointer}.data-table tbody tr.selectable:hover{background:var(--soft-blue)}.data-table tbody tr.selected{background:var(--soft-blue);color:var(--blue);font-weight:600}.value-positive{color:var(--green)}.value-negative{color:var(--error)}.table-note{font-size:12px;color:var(--muted);margin:12px 0 0}.interp-status{margin-top:16px;padding:12px 13px;border-radius:9px;font-size:13px;line-height:1.6;background:var(--soft-blue);color:#345875}.interp-status.warn{background:var(--soft-orange);color:#855020}.interp-formula{margin:17px 0 9px;padding-bottom:5px;overflow:auto}.interp-formula math{font-size:18px;white-space:nowrap;min-width:max-content;margin:auto}.calc-steps{padding-left:20px;font-size:14px;line-height:1.8;margin-bottom:0}.step-result{font-size:14px;line-height:1.65;margin-top:12px;color:var(--muted)}.sum-bar{display:flex;align-items:center;justify-content:space-between;padding:13px 12px;background:var(--soft-blue);border-top:1px solid var(--line);font-size:14px}.sum-bar strong{font-size:19px;white-space:nowrap}.section-topline{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.explain-details{border-top:1px solid var(--line);padding:0 23px}.explain-details summary{cursor:pointer;padding:17px 0;font-size:15px;font-weight:600;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px}.explain-details summary:after{content:"+";font-size:21px;color:var(--muted)}.explain-details[open] summary:after{content:"−"}.explain-details p{font-size:14px;color:var(--muted);line-height:1.75;margin:0 0 16px}.footer{margin-top:25px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:10;padding:12px 18px;background:var(--navy);color:white;border-radius:10px;font-size:14px;max-width:90vw;box-shadow:0 4px 20px #142e4933}.print-summary{display:none}.empty-chart{padding:70px 20px;text-align:center;color:var(--muted)}
+@media(min-width:1250px){.sidebar{position:sticky;top:22px}.panel-body{padding:23px}}
+@media(max-width:1150px){.layout{grid-template-columns:286px minmax(0,1fr);gap:19px}.below-grid{grid-template-columns:1fr}.metric{padding:17px 15px}.scale-status{margin-left:0;max-width:none}.panel-body,.panel-head{padding-left:20px;padding-right:20px}}
+@media(max-width:800px){main{padding:25px 17px 35px}.topbar-inner{padding:17px;align-items:start}.brand-sub{display:none}.header-actions .btn{font-size:12px;padding:8px 10px;min-height:37px}.brand-mark{width:38px;height:38px;font-size:14px}.brand-name{font-size:16px}.intro{display:block;margin-bottom:22px}.example-button{margin-top:16px}.layout{grid-template-columns:1fr}.sidebar{grid-template-columns:1fr}.side-note{display:none}.sidebar .panel-body{display:grid;grid-template-columns:1fr 1fr;gap:17px}.sidebar .panel-head{padding-top:18px}.sidebar .field{margin:0}.cashflow-head{grid-column:1/-1;margin:0;padding-top:14px}.flow-list{grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.add-flow,.flow-help{grid-column:1/-1;margin-top:0}.metric-name{font-size:12px}.metric-value{font-size:25px}.metric-sub{font-size:11px}.chart-wrap svg{height:390px}.chart-wrap{min-height:380px}.formula-scroll math{font-size:20px}.footer{margin-top:20px}}
+@media(max-width:480px){.brand-mark{display:none}.topbar-inner{gap:10px}.header-actions{gap:6px}.header-actions .btn{padding:7px 9px}.brand-name{font-size:15px;max-width:115px;line-height:1.25}.intro p{font-size:15px}h1{font-size:29px}.metrics{grid-template-columns:1fr}.metric{padding:15px 19px;display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:12px}.metric+.metric{border-left:0;border-top:1px solid var(--line)}.metric-name{grid-column:1;margin:0;font-size:13px}.metric-value{grid-column:2;grid-row:1;font-size:26px;text-align:right}.metric-sub{grid-column:1/-1;margin-top:5px;font-size:12px}.root-select{grid-column:1/-1}.step-switch{gap:5px;padding:17px 16px 0}.step-btn{min-width:calc(50% - 5px);font-size:13px;padding:9px 5px}.chart-wrap{padding-left:4px;padding-right:4px;min-height:355px}.chart-wrap svg{height:355px}.chart-panel .panel-head{padding-left:17px;padding-right:17px}.chart-panel h2{font-size:18px}.chart-panel .panel-head p{font-size:13px}.legend{padding:0 17px 15px;gap:13px;font-size:11px}.chart-scale,.stage-explanation{padding-left:17px;padding-right:17px}.compact-field{width:calc(50% - 8px)}.scale-label{width:100%;min-height:28px}.scale-status{font-size:12px}.flow-list{grid-template-columns:1fr 1fr}.flow-row{grid-template-columns:1fr 25px}.remove-flow{width:25px}.flow-row input{padding-left:9px;padding-right:29px;font-size:16px}.flow-row .input-unit span{right:9px}.sidebar .panel-body{gap:15px}.data-table{font-size:13px}.data-table td,.data-table th{padding:10px 8px}.panel-body{padding:19px 17px}.panel-head{padding-left:17px;padding-right:17px}.test-rate{flex-wrap:wrap}.test-rate input{max-width:100px}.form-row{gap:10px}.formula-panel{padding:20px 17px}}
+@media print{@page{size:A4;margin:13mm}body{background:white;font-size:11px;color:#17212b}.topbar{background:white;color:#142e49;border-bottom:1px solid #bbb}.topbar-inner{padding:0 0 12px}.brand-sub{color:#555}.brand-mark,.header-actions,.example-button,.add-flow,.remove-flow,.side-note,.step-switch,.chart-scale,.btn,.btn-text,.explain-details,.chart-tooltip,.toast,.root-select{display:none!important}main{padding:17px 0;max-width:none}.intro{margin-bottom:15px}h1{font-size:25px}.intro p{font-size:12px}.layout{display:block}.sidebar{display:none}.workspace{gap:15px}.metrics{display:grid;grid-template-columns:1fr 1fr 1fr;break-inside:avoid}.metric{display:block;padding:12px;border:0!important}.metric-focus{background:#edf2f7;color:#142e49}.metric-focus .metric-name,.metric-focus .metric-sub,.metric-focus .metric-value{color:#142e49}.metric-value{font-size:23px;text-align:left}.metric-name{font-size:11px}.metric-sub{font-size:10px}.panel{break-inside:avoid;border-color:#cbd1d8;border-radius:8px}.panel-head{padding:15px 16px 0}.panel-body{padding:16px}h2{font-size:16px}.chart-wrap{min-height:0;padding:8px 10px 0}.chart-wrap svg{height:320px}.chart-panel{break-inside:avoid}.legend{font-size:10px;padding-bottom:10px}.stage-explanation{padding:10px 16px;font-size:11px}.formula-panel{padding:13px 16px}.formula-scroll math{font-size:18px}.below-grid{display:block}.below-grid>.panel{margin-bottom:15px;break-inside:avoid}.data-table{font-size:11px}.data-table th{font-size:10px}.data-table td,.data-table th{padding:7px 9px}.interp-status,.calc-steps,.step-result{font-size:11px}.print-summary{display:block;border-bottom:1px solid #ddd;padding:0 0 12px;margin-bottom:15px;font-size:12px}.footer{font-size:10px}.form-row input,.test-rate input{border:0;padding:0;min-height:0;background:none;font-size:12px;max-width:85px}.form-row label,.test-rate label{font-size:11px}.input-unit span{display:none}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner"><div class="brand"><span class="brand-mark" aria-hidden="true">TIR</span><div><div class="brand-name">Laboratorio TIR e VAN</div><div class="brand-sub">Matematica finanziaria, da vedere e capire</div></div></div><div class="header-actions"><button class="btn btn-light" id="print-btn" type="button">Stampa</button><button class="btn btn-light" id="html-btn" type="button">Scarica HTML</button></div></div></header>
+<main>
+<div class="intro"><div><p class="eyebrow">Il tuo investimento, punto per punto</p><h1>Costruisci il grafico. Trova il TIR.</h1><p>Inserisci i flussi di cassa e osserva come cambiano il VAN, la curva e l’interpolazione lineare.</p></div><button class="btn example-button" id="example-btn" type="button">Carica l’esempio del PDF</button></div>
+<div class="print-summary" id="print-summary"></div>
+<div class="layout">
+<aside class="sidebar" aria-label="Parametri dell’investimento">
+<section class="panel"><div class="panel-head"><div class="section-number">01 · I tuoi dati</div><h2>Da dove partiamo?</h2><p>Tutti i flussi avvengono alla fine di ciascun periodo.</p></div><div class="panel-body">
+<div class="field"><label for="initial">Investimento iniziale</label><div class="input-unit"><input id="initial" inputmode="decimal" value="1000" autocomplete="off" aria-describedby="initial-help"><span>€</span></div><p class="help" id="initial-help">Inserisci l’importo positivo. È l’uscita di oggi.</p></div>
+<div class="field"><label for="frequency">Durata di un periodo</label><select id="frequency"><option value="annual">Un anno</option><option value="monthly">Un mese</option></select><p class="help">Il TIR e i tassi seguono questa cadenza.</p></div>
+<div class="cashflow-head"><strong>Flussi futuri</strong><span class="count" id="period-count">2 periodi</span></div>
+<div class="flow-list" id="flow-list"></div>
+<button class="btn add-flow" id="add-flow" type="button">+ Aggiungi un periodo</button>
+<p class="help flow-help">Un incasso è positivo; un’ulteriore uscita va inserita con il segno meno. Massimo 20 periodi.</p>
+</div></section>
+<div class="side-note"><strong>Il tasso cambia, le date restano fisse.</strong><br>Il grafico mostra il VAN per diversi tassi di attualizzazione. Sull’asse orizzontale trovi il tasso, su quello verticale il VAN in euro.</div>
+</aside>
+<div class="workspace">
+<div class="validation" id="validation" role="alert" hidden></div>
+<div id="results" class="workspace">
+<section class="metrics" aria-label="Risultati del calcolo" aria-live="polite">
+<div class="metric"><span class="metric-name" id="npv-label">VAN al 10%</span><strong class="metric-value" id="npv-metric">—</strong><span class="metric-sub" id="npv-note"></span></div>
+<div class="metric metric-focus"><span class="metric-name" id="irr-label">TIR annuo</span><strong class="metric-value" id="irr-metric">—</strong><span class="metric-sub" id="irr-note"></span><label class="sr-only" for="root-select">TIR da evidenziare</label><select class="root-select" id="root-select" hidden></select></div>
+<div class="metric"><span class="metric-name">Stima per interpolazione</span><strong class="metric-value" id="estimate-metric">—</strong><span class="metric-sub" id="estimate-note"></span></div>
+</section>
+<section class="panel chart-panel" aria-labelledby="chart-title"><div class="panel-head"><div><div class="section-number">02 · Il grafico</div><h2 id="chart-title">La funzione del VAN</h2><p id="chart-subtitle">Scegli come costruirla: dagli assi alla retta.</p></div><button class="btn btn-small" id="svg-btn" type="button">Scarica grafico</button></div>
+<div class="step-switch" role="group" aria-label="Passaggi della costruzione del grafico"><button class="step-btn" data-step="1" type="button" aria-pressed="false">1. Assi</button><button class="step-btn" data-step="2" type="button" aria-pressed="false">2. Punti</button><button class="step-btn" data-step="3" type="button" aria-pressed="false">3. Curva e TIR</button><button class="step-btn" data-step="4" type="button" aria-pressed="true">4. Interpolazione</button></div>
+<div class="chart-wrap" id="chart-wrap"><svg id="chart" role="img" aria-labelledby="svg-title svg-description"></svg><div class="chart-tooltip" id="chart-tooltip" role="tooltip" hidden></div></div>
+<div class="legend"><span><i class="swatch" aria-hidden="true"></i>Curva del VAN</span><span><i class="swatch interp" aria-hidden="true"></i>Retta di interpolazione</span><span><i class="swatch zero" aria-hidden="true"></i>VAN = 0</span></div>
+<div class="chart-scale"><label class="scale-label" for="auto-scale"><input id="auto-scale" type="checkbox" checked>Scala automatica</label><div class="compact-field"><label for="min-rate">Tasso minimo (%)</label><input id="min-rate" inputmode="decimal" value="0" disabled></div><div class="compact-field"><label for="max-rate">Tasso massimo (%)</label><input id="max-rate" inputmode="decimal" value="20" disabled></div><div class="scale-status" id="scale-status"></div></div>
+<div class="stage-explanation" id="stage-explanation" aria-live="polite"></div>
+</section>
+<section class="panel formula-panel"><div class="section-number">03 · La funzione</div><h2>La formula con i tuoi valori</h2><div class="formula-scroll" id="formula"></div><p class="scroll-hint" id="formula-scroll-hint" hidden>Scorri in orizzontale per leggere tutti i termini.</p><p id="formula-description"></p></section>
+<div class="below-grid">
+<section class="panel"><div class="panel-head"><div class="section-number">04 · La tabella dei punti</div><div class="section-topline"><h2>Dal tasso al VAN</h2><button class="btn-text" id="csv-btn" type="button">Scarica CSV</button></div><p>Seleziona una riga per vedere il calcolo di quel punto.</p></div><div class="panel-body"><div class="test-rate"><label for="test-rate">Tasso da verificare (%)</label><input id="test-rate" inputmode="decimal" value="10"></div><div class="table-wrap"><table class="data-table"><thead><tr><th scope="col">Tasso</th><th scope="col">i decimale</th><th scope="col">VAN (€)</th></tr></thead><tbody id="sample-body"></tbody></table></div><p class="table-note" id="sample-note"></p></div></section>
+<section class="panel"><div class="panel-head"><div class="section-number">05 · L’interpolazione</div><h2>Una retta tra due punti</h2><p>Scegli due tassi ai lati dello zero della curva.</p></div><div class="panel-body"><div class="form-row"><div class="field"><label for="rate-a">Tasso A (%)</label><input id="rate-a" inputmode="decimal" value="10"></div><div class="field"><label for="rate-b">Tasso B (%)</label><input id="rate-b" inputmode="decimal" value="15"></div></div><button class="btn-text" id="bracket-btn" type="button" style="margin-top:12px">Trova due tassi vicini al TIR</button><div class="interp-status" id="interp-status"></div><div class="interp-formula" id="interp-formula"></div><ol class="calc-steps" id="interp-steps"></ol><p class="step-result" id="interp-note"></p></div></section>
+</div>
+<section class="panel"><div class="panel-head"><div class="section-number">06 · Il calcolo in dettaglio</div><h2 id="breakdown-title">Come si ottiene il VAN</h2><p id="breakdown-subtitle"></p></div><div class="panel-body"><div class="table-wrap"><table class="data-table"><thead><tr><th scope="col">Momento</th><th scope="col">Flusso (€)</th><th scope="col">Divisore</th><th scope="col">Valore attuale (€)</th></tr></thead><tbody id="breakdown-body"></tbody></table></div><div class="sum-bar"><span>Somma dei valori attuali = VAN</span><strong id="sum-value"></strong></div></div>
+<details class="explain-details"><summary>Perché il VAN diminuisce quando aumenta il tasso?</summary><p id="decreasing-help"></p></details>
+<details class="explain-details"><summary>Che cosa significa VAN uguale a zero?</summary><p>Il valore attuale degli incassi e delle uscite si compensa. Il capitale è remunerato esattamente al tasso considerato. VAN uguale a zero non significa assenza di guadagno: il TIR tiene conto anche del momento in cui arrivano i flussi.</p></details>
+<details class="explain-details"><summary>Come disegnare il grafico sul quaderno?</summary><p id="paper-help"></p></details>
+</section>
+<div class="footer"><span>Flussi a intervalli regolari · Attualizzazione composta · Importi arrotondati ai centesimi</span><span>I calcoli avvengono nel browser.</span></div>
+</div></div></div>
+</main>
+<div class="toast" id="toast" role="status" hidden></div>
+<script id="initial-state" type="application/json">{"initial":1000,"flows":[600,600],"frequency":"annual","testRate":10,"rateA":10,"rateB":15,"autoScale":true,"minRate":0,"maxRate":20,"step":4,"rootIndex":0}</script>
+<script id="tir-math">
+(function(global){
+  'use strict';
+  function parse(s,grouping=true){
+    if(typeof s==='number')return s;
+    let v=String(s).trim().replace(/[\s€%]/g,'').replace(/−/g,'-');
+    if(!v)return NaN;
+    if(v.includes(',')){v=v.replace(/\./g,'').replace(',','.');}
+    else if(grouping&&/^[+-]?\d{1,3}(\.\d{3})+$/.test(v)){v=v.replace(/\./g,'');}
+    return /^[+-]?(\d+(\.\d*)?|\.\d+)$/.test(v)?Number(v):NaN;
+  }
+  function npv(initial,flows,rate){
+    if(!Number.isFinite(rate)||rate<=-100)return NaN;
+    const q=1/(1+rate/100);let v=0;
+    for(let j=flows.length-1;j>=0;j--)v=(v+flows[j])*q;
+    return v-initial;
+  }
+  function polyEval(c,x){let v=0;for(let j=c.length-1;j>=0;j--)v=v*x+c[j];return v;}
+  function polyScale(c,x){let v=0;for(let j=c.length-1;j>=0;j--)v=v*Math.abs(x)+Math.abs(c[j]);return v;}
+  function unique(a){return a.sort((x,y)=>x-y).filter((x,i,r)=>!i||Math.abs(x-r[i-1])>1e-9*Math.max(Math.abs(x),Math.abs(r[i-1]),1e-15));}
+  function positivePolynomialRoots(raw){
+    const c=raw.slice();while(c.length>1&&c[c.length-1]===0)c.pop();
+    const n=c.length-1;if(n<1)return [];
+    const norm=Math.max(...c.map(Math.abs));for(let j=0;j<c.length;j++)c[j]/=norm;
+    if(n===1){const r=-c[0]/c[1];return r>0&&Number.isFinite(r)?[r]:[];}
+    const bound=1+Math.max(...c.slice(0,-1).map(x=>Math.abs(x/c[n])));
+    const derivative=c.slice(1).map((x,j)=>x*(j+1));
+    const critical=positivePolynomialRoots(derivative).filter(x=>x<bound);
+    const close=x=>Math.abs(polyEval(c,x))<=1e-11*Math.max(polyScale(c,x),1e-300);
+    const roots=critical.filter(close),edges=[0,...critical,bound];
+    for(let j=0;j<edges.length-1;j++){
+      let lo=edges[j],hi=edges[j+1],flo=polyEval(c,lo),fhi=polyEval(c,hi);
+      if(close(lo)&&lo>0)roots.push(lo);if(close(hi))roots.push(hi);
+      if(flo===0||fhi===0||Math.sign(flo)===Math.sign(fhi))continue;
+      for(let k=0;k<240;k++){
+        const mid=lo+(hi-lo)/2,fm=polyEval(c,mid);
+        if(fm===0){lo=hi=mid;break;}
+        if(Math.sign(fm)===Math.sign(flo)){lo=mid;flo=fm;}else{hi=mid;fhi=fm;}
+        if(hi-lo<1e-13*Math.max(Math.abs(lo),Math.abs(hi),1e-30))break;
+      }
+      roots.push(lo+(hi-lo)/2);
+    }
+    return unique(roots.filter(x=>x>0&&Number.isFinite(x)));
+  }
+  function irrs(initial,flows){
+    if(!(initial>0)||flows.length<1)return [];
+    if(flows.every(x=>x>=0)){
+      if(!flows.some(x=>x>0))return [];
+      let lo=-99.999999999,hi=100;
+      while(npv(initial,flows,hi)>0&&hi<1e18)hi=hi*2+100;
+      if(npv(initial,flows,lo)<0||npv(initial,flows,hi)>0)return positivePolynomialRoots([-initial,...flows]).map(q=>(1/q-1)*100).filter(Number.isFinite).sort((a,b)=>a-b);
+      for(let k=0;k<180;k++){const m=(lo+hi)/2;if(npv(initial,flows,m)>0)lo=m;else hi=m;}
+      return [(lo+hi)/2];
+    }
+    return unique(positivePolynomialRoots([-initial,...flows]).map(q=>(1/q-1)*100).filter(r=>Number.isFinite(r)&&r>-100)).sort((a,b)=>a-b);
+  }
+  function interpolate(initial,flows,a,b){
+    const fa=npv(initial,flows,a),fb=npv(initial,flows,b),eps=Math.max(1e-9,initial*1e-11);
+    if(a===b||!Number.isFinite(fa)||!Number.isFinite(fb))return {ok:false,fa,fb,reason:'rates'};
+    if(Math.abs(fa)<=eps)return {ok:true,fa,fb,value:a,exact:true};
+    if(Math.abs(fb)<=eps)return {ok:true,fa,fb,value:b,exact:true};
+    if(Math.sign(fa)===Math.sign(fb))return {ok:false,fa,fb,reason:'sign'};
+    return {ok:true,fa,fb,value:a+fa/(fa-fb)*(b-a),exact:false};
+  }
+  function niceStep(span,count=6){const raw=span/count,pow=10**Math.floor(Math.log10(raw||1));const r=raw/pow;return (r<=1?1:r<=2?2:r<=2.5?2.5:r<=5?5:10)*pow;}
+  global.TIRMath=Object.freeze({parse,npv,irrs,interpolate,niceStep});
+})(window);
+</script>
+<script id="tir-app">
+(function(){
+'use strict';
+const $=id=>document.getElementById(id),M=window.TIRMath,NS='http://www.w3.org/2000/svg';
+const DEFAULT={initial:1000,flows:[600,600],frequency:'annual',testRate:10,rateA:10,rateB:15,autoScale:true,minRate:0,maxRate:20,step:4,rootIndex:0};
+let state={...DEFAULT,flows:DEFAULT.flows.slice()},model=null,timer=null,toastTimer=null,chartState=null;
+const clean=v=>Math.abs(v)<1e-9?0:v;
+function num(v,min=0,max=2){
+ if(!Number.isFinite(v))return '—';
+ if(Math.abs(v)>=1e14)return v.toExponential(3).replace('.',',');
+ return new Intl.NumberFormat('it-IT',{minimumFractionDigits:min,maximumFractionDigits:max}).format(clean(v));
+}
+function money(v,signed=false){return (signed&&v>1e-9?'+':'')+num(v,2,2)+' €';}
+function pct(v,d=2){return num(v,0,d)+'%';}
+function rateValue(v){return Number(v.toPrecision(12)).toString().replace('.',',');}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function periodName(t){if(t===0)return 'Oggi';return (state.frequency==='monthly'?'Fine mese ':'Fine anno ')+t;}
+function writeRows(values){
+ const f=$('frequency').value==='monthly'?'mese':'anno';
+ $('flow-list').innerHTML=values.map((v,i)=>'<div class="flow-row"><div><label for="flow-'+i+'">Fine '+f+' '+(i+1)+'</label><div class="input-unit"><input class="flow-input" id="flow-'+i+'" inputmode="decimal" autocomplete="off" value="'+esc(typeof v==='number'?rateValue(v):v)+'"><span>€</span></div></div><button class="remove-flow" type="button" data-remove="'+i+'" aria-label="Elimina il flusso del periodo '+(i+1)+'"'+(values.length===1?' disabled':'')+'>×</button></div>').join('');
+ $('period-count').textContent=values.length+(values.length===1?' periodo':' periodi');
+ $('add-flow').disabled=values.length>=20;
+}
+function rawFlows(){return Array.from(document.querySelectorAll('.flow-input')).map(el=>el.value);}
+function fillForm(data){
+ $('initial').value=rateValue(data.initial);
+ $('frequency').value=data.frequency;
+ $('test-rate').value=rateValue(data.testRate);
+ $('rate-a').value=rateValue(data.rateA);
+ $('rate-b').value=rateValue(data.rateB);
+ $('min-rate').value=rateValue(data.minRate);
+ $('max-rate').value=rateValue(data.maxRate);
+ $('auto-scale').checked=data.autoScale;
+ writeRows(data.flows);
+}
+function invalid(id,message){const el=$(id);if(el)el.setAttribute('aria-invalid','true');throw new Error(message);}
+function readState(){
+ document.querySelectorAll('[aria-invalid=true]').forEach(el=>el.removeAttribute('aria-invalid'));
+ let initial=M.parse($('initial').value);
+ if(!Number.isFinite(initial)||initial<=0||initial>1e12)invalid('initial','Inserisci un investimento iniziale maggiore di zero e non superiore a 1.000 miliardi di euro.');
+ initial=Math.round(initial*100)/100;
+ if(initial<.01)invalid('initial','L’investimento iniziale deve essere almeno 0,01 €.');
+ const flows=Array.from(document.querySelectorAll('.flow-input')).map((el,i)=>{
+  const v=M.parse(el.value);
+  if(!Number.isFinite(v)||Math.abs(v)>1e12)invalid(el.id,'Controlla il flusso del periodo '+(i+1)+': inserisci un importo numerico, positivo o negativo, fino a 1.000 miliardi di euro.');
+  return Math.round(v*100)/100;
+ });
+ const rates={};
+ for(const [key,id,label] of [['testRate','test-rate','da verificare'],['rateA','rate-a','A'],['rateB','rate-b','B']]){
+  const v=M.parse($(id).value,false);
+  if(!Number.isFinite(v)||v<=-100||v>1e6)invalid(id,'Il tasso '+label+' deve essere maggiore di -100% e non superiore a 1.000.000%.');
+  rates[key]=v;
+ }
+ const autoScale=$('auto-scale').checked;
+ let minRate=M.parse($('min-rate').value,false),maxRate=M.parse($('max-rate').value,false);
+ if(!autoScale){
+  if(!Number.isFinite(minRate)||minRate<=-100)invalid('min-rate','Il limite minimo del grafico deve essere maggiore di -100%.');
+  if(!Number.isFinite(maxRate)||maxRate>1e6||maxRate<=minRate)invalid('max-rate','Il limite massimo deve superare quello minimo e non può superare 1.000.000%.');
+  if(maxRate-minRate<1e-7)invalid('max-rate','Scegli un intervallo di tassi leggermente più ampio.');
+ }
+ return {...state,initial,flows,frequency:$('frequency').value,...rates,autoScale,minRate,maxRate};
+}
+function domainFor(s,root){
+ if(!s.autoScale)return [s.minRate,s.maxRate];
+ const v=[0,s.rateA,s.rateB,s.testRate];
+ if(root!==null&&root>-99&&root<=1e6)v.push(root);
+ let lo=Math.min(...v),hi=Math.max(...v);
+ const span=Math.max(5,hi-lo);
+ lo=lo<0?Math.max(-99.9,Math.floor((lo-span*.12)/5)*5):0;
+ hi=Math.min(1e6,Math.ceil((hi+Math.max(3,span*.12))/5)*5);
+ if(hi<=lo)hi=lo+5;
+ return [lo,hi];
+}
+function samplesFor(domain,root){
+ const [lo,hi]=domain,step=M.niceStep(hi-lo,5),a=[lo,hi,state.testRate,state.rateA,state.rateB];
+ for(let x=Math.ceil(lo/step)*step,k=0;x<hi+step*.001&&k<60;x+=step,k++)a.push(x);
+ if(root!==null){
+  const unit=(hi-lo)>300?M.niceStep(hi-lo,25):1;
+  const near=Math.floor(root/unit)*unit;
+  a.push(near-unit,near,near+unit);
+ }
+ const sorted=a.filter(x=>x>=lo-1e-8&&x<=hi+1e-8).sort((x,y)=>x-y);
+ return sorted.filter((x,i)=>i===0||Math.abs(x-sorted[i-1])>1e-8*Math.max(1,Math.abs(x)));
+}
+function setClassForValue(el,value){el.classList.remove('positive','negative');if(value>1e-7)el.classList.add('positive');if(value<-1e-7)el.classList.add('negative');}
+function recalc(){
+ clearTimeout(timer);
+ $('min-rate').disabled=$('auto-scale').checked;
+ $('max-rate').disabled=$('auto-scale').checked;
+ try{
+  state=readState();
+  const roots=M.irrs(state.initial,state.flows);
+  state.rootIndex=Math.min(Math.max(0,state.rootIndex||0),Math.max(0,roots.length-1));
+  const root=roots.length?roots[state.rootIndex]:null;
+  const domain=domainFor(state,root);
+  const interp=M.interpolate(state.initial,state.flows,state.rateA,state.rateB);
+  const samples=samplesFor(domain,root);
+  model={roots,root,domain,interp,samples,van:M.npv(state.initial,state.flows,state.testRate)};
+  $('validation').hidden=true;$('results').classList.remove('paused');
+  for(const id of ['print-btn','html-btn','svg-btn','csv-btn'])$(id).disabled=false;
+  if(state.autoScale){$('min-rate').value=rateValue(domain[0]);$('max-rate').value=rateValue(domain[1]);}
+  renderMetrics();renderFormula();renderSamples();renderInterpolation();renderBreakdown();renderHelp();drawChart();
+ }catch(error){
+  $('validation').textContent=error.message+' I risultati sono in pausa fino alla correzione.';
+  $('validation').hidden=false;$('results').classList.add('paused');
+  for(const id of ['print-btn','html-btn','svg-btn','csv-btn'])$(id).disabled=true;
+  $('npv-metric').textContent='—';$('irr-metric').textContent='—';$('estimate-metric').textContent='—';
+ }
+}
+function schedule(){clearTimeout(timer);timer=setTimeout(recalc,140);}
+function renderMetrics(){
+ const {roots,root,interp,van}=model;
+ $('npv-label').textContent='VAN al '+pct(state.testRate,4);
+ $('npv-metric').textContent=money(van,true);setClassForValue($('npv-metric'),van);
+ $('npv-note').textContent=Math.abs(van)<.005?'Il valore attuale netto è circa zero.':van>0?'Il rendimento richiesto è soddisfatto.':'Il rendimento richiesto non è raggiunto.';
+ $('irr-label').textContent=state.frequency==='monthly'?'TIR mensile':'TIR annuo';
+ $('irr-metric').textContent=root===null?'Nessun TIR':pct(root,2);
+ if(root===null)$('irr-note').textContent='Nessuna soluzione reale ammissibile per questi flussi.';
+ else if(roots.length>1)$('irr-note').textContent=roots.length+' TIR ammissibili. Scegli quello da evidenziare.';
+ else if(state.frequency==='monthly'){
+  const annual=((1+root/100)**12-1)*100;
+  $('irr-note').textContent='Equivalente annuo: '+pct(annual,2)+'. Al TIR il VAN è zero.';
+ }else $('irr-note').textContent='Valore più preciso: '+pct(root,4)+'. Al TIR il VAN è zero.';
+ $('root-select').hidden=roots.length<2;
+ $('root-select').innerHTML=roots.map((r,i)=>'<option value="'+i+'"'+(i===state.rootIndex?' selected':'')+'>'+esc(pct(r,6))+'</option>').join('');
+ $('estimate-metric').textContent=interp.ok?pct(interp.value,2):'Non disponibile';
+ $('estimate-note').textContent=interp.ok?(interp.exact?'Uno dei tassi scelti annulla già il VAN.':'Retta tra '+pct(state.rateA,4)+' e '+pct(state.rateB,4)+'.'):'Scegli due tassi con VAN di segno opposto.';
+ $('bracket-btn').disabled=root===null;
+ $('print-summary').textContent='Investimento iniziale: '+money(state.initial)+' · Cadenza: '+(state.frequency==='monthly'?'mensile':'annuale')+' · Flussi futuri: '+state.flows.map((v,i)=>'periodo '+(i+1)+': '+money(v,true)).join('; ');
+}
+function mn(v){return '<mn>'+esc(num(v,0,2))+'</mn>';}
+function mMath(content,label){return '<math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="'+esc(label||'Formula matematica')+'"><mrow>'+content+'</mrow></math>';}
+function frac(a,b){return '<mfrac><mrow>'+a+'</mrow><mrow>'+b+'</mrow></mfrac>';}
+function renderFormula(){
+ let terms='<mi>f</mi><mo>(</mo><mi>i</mi><mo>)</mo><mo>=</mo><mo>−</mo>'+mn(state.initial);
+ state.flows.forEach((v,i)=>{
+  if(v===0)return;
+  const base='<mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>i</mi><mo>)</mo></mrow>';
+  const den=i===0?base:'<msup>'+base+'<mn>'+(i+1)+'</mn></msup>';
+  terms+='<mo>'+(v<0?'−':'+')+'</mo>'+frac(mn(Math.abs(v)),den);
+ });
+ $('formula').innerHTML=mMath(terms,'Funzione del VAN con i valori inseriti');
+ $('formula-description').textContent='i è il tasso '+(state.frequency==='monthly'?'mensile':'annuo')+' in forma decimale: '+pct(state.testRate,4)+' = '+num(state.testRate/100,0,6)+'. Ogni flusso è diviso per (1 + i) elevato al numero del periodo.';
+ requestAnimationFrame(()=>{$('formula-scroll-hint').hidden=$('formula').scrollWidth<=$('formula').clientWidth+3;});
+}
+function renderSamples(){
+ $('sample-body').innerHTML=model.samples.map(r=>{
+  const v=M.npv(state.initial,state.flows,r),isSelected=Math.abs(r-state.testRate)<1e-8;
+  let tag='';
+  if(Math.abs(r-state.rateA)<1e-8)tag+=' A';
+  if(Math.abs(r-state.rateB)<1e-8)tag+=' B';
+  return '<tr class="selectable'+(isSelected?' selected':'')+'" data-rate="'+r+'" tabindex="0" aria-label="Verifica il VAN al '+esc(pct(r,6))+'"><td>'+esc(pct(r,4))+(tag?'<span class="small muted">'+esc(tag)+'</span>':'')+'</td><td>'+esc(num(r/100,0,6))+'</td><td class="'+(v>=0?'value-positive':'value-negative')+'">'+esc(money(v,true).replace(' €',''))+'</td></tr>';
+ }).join('');
+ $('sample-note').textContent='A e B sono i tassi di interpolazione. La tabella aggiunge punti vicino al TIR, se compresi nell’intervallo del grafico. Il tasso da verificare resta modificabile.';
+}
+function renderInterpolation(){
+ const {interp,root,roots}=model;
+ const a=state.rateA,b=state.rateB,fa=interp.fa,fb=interp.fb;
+ const status=$('interp-status');status.classList.toggle('warn',!interp.ok);
+ if(!interp.ok){
+  status.textContent=interp.reason==='rates'?'I due tassi devono essere diversi.':'VAN(A) = '+money(fa,true)+' e VAN(B) = '+money(fb,true)+'. I valori hanno lo stesso segno: il segmento non attraversa VAN = 0. Modifica i tassi oppure usa il pulsante per avvicinarti al TIR.';
+  $('interp-formula').innerHTML='';$('interp-steps').innerHTML='';
+  $('interp-note').textContent='In questo caso non presentiamo un’extrapolazione come se fosse un’interpolazione.';
+  return;
+ }
+ status.textContent='Punto A: ('+pct(a,4)+'; '+money(fa,true)+') · Punto B: ('+pct(b,4)+'; '+money(fb,true)+')';
+ if(interp.exact){
+  $('interp-formula').innerHTML=mMath('<mi>VAN</mi><mo>=</mo><mn>0</mn><mo>⇒</mo><mi>TIR</mi><mo>≈</mo>'+mn(interp.value)+'<mo>%</mo>','Uno dei tassi annulla già il VAN');
+  $('interp-steps').innerHTML='';
+  $('interp-note').textContent='Uno dei punti è già sulla linea VAN = 0. Non serve stimare l’incrocio della retta.';
+  return;
+ }
+ const denominator=fa-fb,fraction=fa/denominator,increment=fraction*(b-a);
+ const asRate=v=>'<mn>'+esc(num(v,0,5))+'</mn>';
+ const formula='<mi>TIR</mi><mo>≈</mo>'+asRate(a)+'<mo>+</mo>'+frac(asRate(fa),'<mrow>'+asRate(fa)+'<mo>−</mo><mo>(</mo>'+asRate(fb)+'<mo>)</mo></mrow>')+'<mo>·</mo><mo>(</mo>'+asRate(b)+'<mo>−</mo>'+asRate(a)+'<mo>)</mo>';
+ $('interp-formula').innerHTML=mMath(formula,'Interpolazione con tassi espressi in punti percentuali');
+ $('interp-steps').innerHTML='<li>Dividi '+esc(num(fa,2,6))+' per '+esc(num(denominator,2,6))+': ottieni '+esc(num(fraction,0,6))+'.</li><li>Moltiplica per '+esc(num(b-a,0,6))+' punti percentuali: ottieni '+esc(num(increment,0,6))+'.</li><li>Aggiungi il risultato al tasso A: la stima è <strong>'+esc(pct(interp.value,4))+'</strong>.</li>';
+ let note='I tassi nella formula sono espressi in punti percentuali. I calcoli usano tutte le cifre disponibili, anche se gli importi mostrati sono arrotondati.';
+ if(root!==null)note+=' Il TIR evidenziato della curva è '+pct(root,4)+': la differenza è '+num(Math.abs(interp.value-root),0,4)+' punti percentuali.';
+ if(roots.length>1)note+=' Con più TIR, scegli A e B molto vicini alla radice che vuoi stimare.';
+ $('interp-note').textContent=note;
+}
+function renderBreakdown(){
+ const r=state.testRate/100;
+ $('breakdown-title').textContent='Come si ottiene il VAN al '+pct(state.testRate,4);
+ $('breakdown-subtitle').textContent='Ogni flusso viene riportato a oggi con il divisore (1 + i) elevato al numero del periodo.';
+ let rows='<tr><td>Oggi</td><td>'+esc(money(-state.initial).replace(' €',''))+'</td><td>1</td><td>'+esc(money(-state.initial).replace(' €',''))+'</td></tr>';
+ state.flows.forEach((v,i)=>{
+  const d=(1+r)**(i+1),va=v/d;
+  rows+='<tr><td>'+esc(periodName(i+1))+'</td><td>'+esc(money(v,true).replace(' €',''))+'</td><td>'+esc(num(d,0,6))+'</td><td>'+esc(money(va,true).replace(' €',''))+'</td></tr>';
+ });
+ $('breakdown-body').innerHTML=rows;
+ $('sum-value').textContent=money(model.van,true);
+}
+function renderHelp(){
+ const normal=state.flows.every(v=>v>=0);
+ $('decreasing-help').textContent=state.flows.every(v=>v===0)?'Tutti i flussi futuri sono nulli. Il VAN rimane uguale all’opposto dell’investimento iniziale per qualunque tasso: il grafico è una retta orizzontale e non esiste un TIR.':normal?'In questo investimento, all’uscita iniziale seguono soltanto flussi positivi o nulli. Quando aumenta il tasso, aumentano i divisori: gli incassi futuri valgono meno oggi e il VAN scende. Se c’è almeno un incasso positivo, esiste un unico TIR nel dominio i > -1.':'Hai inserito anche uscite future. In questo caso la curva può non essere sempre decrescente e il TIR può non essere unico, oppure non esistere. Il laboratorio cerca anche le radici tangenti alla linea dello zero e indica le soluzioni ammissibili trovate.';
+ $('paper-help').textContent='Disegna due assi: tasso '+(state.frequency==='monthly'?'mensile':'annuo')+' (%) sull’orizzontale e VAN (€) sul verticale. Usa intervalli regolari su ogni asse. Prendi una riga della tabella, raggiungi il tasso sull’asse orizzontale, poi sali se il VAN è positivo o scendi se è negativo. Ripeti per gli altri punti e traccia una curva regolare. Il TIR è il tasso nel punto in cui la curva incontra VAN = 0. Per l’interpolazione, unisci A e B con il righello.';
+}
+function svgEl(tag,attrs,parent,text){
+ const el=document.createElementNS(NS,tag);
+ for(const [key,value]of Object.entries(attrs||{}))el.setAttribute(key,String(value));
+ if(text!==undefined)el.textContent=text;
+ if(parent)parent.appendChild(el);return el;
+}
+function drawChart(){
+ if(!model)return;
+ const svg=$('chart'),wrap=$('chart-wrap'),width=Math.max(260,Math.floor(wrap.clientWidth-(innerWidth<=480?8:30)));
+ const height=innerWidth<=480?355:innerWidth<=800?390:420;
+ const margin={l:innerWidth<=480?68:82,r:22,t:26,b:65};
+ const left=margin.l,right=width-margin.r,top=margin.t,bottom=height-margin.b;
+ const [xmin,xmax]=model.domain,curve=[];
+ for(let i=0;i<=360;i++){const x=xmin+(xmax-xmin)*i/360;curve.push({x,y:M.npv(state.initial,state.flows,x)});}
+ const ys=curve.map(p=>p.y).filter(Number.isFinite);ys.push(0);
+ if(state.rateA>=xmin&&state.rateA<=xmax)ys.push(model.interp.fa);
+ if(state.rateB>=xmin&&state.rateB<=xmax)ys.push(model.interp.fb);
+ let rawMin=Math.min(...ys),rawMax=Math.max(...ys);
+ if(rawMax-rawMin<1e-12){rawMin-=1;rawMax+=1;}
+ const ystep=M.niceStep(rawMax-rawMin,6);
+ const ymin=Math.floor(rawMin/ystep)*ystep,ymax=Math.ceil(rawMax/ystep)*ystep;
+ const xscale=x=>left+6+(x-xmin)/(xmax-xmin)*(right-left-12);
+ const yscale=y=>bottom-6-(y-ymin)/(ymax-ymin)*(bottom-top-12);
+ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+ svg.replaceChildren();svg.setAttribute('viewBox','0 0 '+width+' '+height);svg.setAttribute('height',height);svg.setAttribute('xmlns',NS);
+ svg.setAttribute('font-family','Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif');
+ svg.setAttribute('font-size',12);
+ svgEl('title',{id:'svg-title'},svg,'Grafico del VAN in funzione del tasso '+(state.frequency==='monthly'?'mensile':'annuo'));
+ svgEl('desc',{id:'svg-description'},svg,'Intervallo da '+pct(xmin,4)+' a '+pct(xmax,4)+'. '+(model.root===null?'Nessun TIR ammissibile.':'TIR evidenziato '+pct(model.root,6)+'.')+' I punti provengono dalla tabella. La retta tratteggiata unisce A e B.');
+ svgEl('rect',{x:0,y:0,width,height,fill:'#ffffff'},svg);
+ const defs=svgEl('defs',{},svg),clip=svgEl('clipPath',{id:'chart-clip'},defs);
+ svgEl('rect',{x:left,y:top,width:right-left,height:bottom-top},clip);
+ for(let val=ymin,k=0;val<=ymax+ystep*.001&&k<14;val+=ystep,k++){
+  const yy=yscale(val);
+  svgEl('line',{x1:left,y1:yy,x2:right,y2:yy,stroke:Math.abs(val)<ystep*.001?'#7e8b9a':'#e4e9ef','stroke-width':Math.abs(val)<ystep*.001?1.2:.7},svg);
+  svgEl('text',{x:left-11,y:yy+4,'text-anchor':'end',fill:'#65768a','font-size':innerWidth<480?11:12},svg,num(val,0,Math.abs(ystep)<1?Math.min(8,Math.ceil(-Math.log10(ystep))+1):0));
+ }
+ const xstep=M.niceStep(xmax-xmin,width<500?3:6);
+ const xticks=[xmin,xmax];
+ for(let val=Math.ceil(xmin/xstep)*xstep,k=0;val<xmax&&k<12;val+=xstep,k++)if(val>xmin+(xmax-xmin)*.06&&val<xmax-(xmax-xmin)*.06)xticks.push(val);
+ xticks.sort((a,b)=>a-b);
+ let lastRight=-Infinity;
+ xticks.forEach((val,i)=>{
+  const xx=xscale(val),digits=Math.abs(xstep)<1?Math.min(7,Math.ceil(-Math.log10(xstep))+1):2;
+  const label=pct(val,digits),estimated=label.length*6.4,anchor=i===0?'start':i===xticks.length-1?'end':'middle';
+  const start=anchor==='start'?xx:anchor==='end'?xx-estimated:xx-estimated/2;
+  if(start<lastRight+5&&i!==xticks.length-1)return;
+  lastRight=start+estimated;
+  svgEl('line',{x1:xx,y1:top,x2:xx,y2:bottom,stroke:'#edf0f4','stroke-width':.7},svg);
+  svgEl('line',{x1:xx,y1:bottom,x2:xx,y2:bottom+5,stroke:'#97a4b2'},svg);
+  svgEl('text',{x:xx,y:bottom+23,'text-anchor':anchor,fill:'#65768a','font-size':innerWidth<480?11:12},svg,label);
+ });
+ svgEl('line',{x1:left,y1:bottom,x2:right,y2:bottom,stroke:'#9aa6b3'},svg);
+ svgEl('line',{x1:left,y1:top,x2:left,y2:bottom,stroke:'#9aa6b3'},svg);
+ svgEl('text',{x:left,y:15,fill:'#455a70','font-size':12,'font-weight':600},svg,'VAN (€)');
+ svgEl('text',{x:(left+right)/2,y:height-12,'text-anchor':'middle',fill:'#455a70','font-size':12},svg,'Tasso '+(state.frequency==='monthly'?'mensile':'annuo')+' (%)');
+ const marks=svgEl('g',{'clip-path':'url(#chart-clip)'},svg);
+ if(state.step>=3){
+  const path=curve.map((p,i)=>(i?'L':'M')+xscale(p.x).toFixed(2)+','+yscale(p.y).toFixed(2)).join(' ');
+  svgEl('path',{d:path,fill:'none',stroke:'#2464ad','stroke-width':2.6,'stroke-linejoin':'round'},marks);
+ }
+ if(state.step>=4&&state.rateA!==state.rateB){
+  svgEl('line',{x1:xscale(state.rateA),y1:yscale(model.interp.fa),x2:xscale(state.rateB),y2:yscale(model.interp.fb),stroke:'#bb651f','stroke-width':2.5,'stroke-dasharray':'7 5'},marks);
+ }
+ if(state.step>=2){
+  model.samples.forEach(x=>svgEl('circle',{cx:xscale(x),cy:yscale(M.npv(state.initial,state.flows,x)),r:3.5,fill:'#2464ad',stroke:'white','stroke-width':1},marks));
+ }
+ if(state.step>=3){
+  model.roots.forEach((r,i)=>{
+   if(r<xmin||r>xmax)return;
+   const selected=i===state.rootIndex,xx=xscale(r),yy=yscale(0);
+   svgEl('circle',{cx:xx,cy:yy,r:selected?5.7:4.2,fill:selected?'#142e49':'white',stroke:'#142e49','stroke-width':1.8},marks);
+   if(selected){
+    svgEl('line',{x1:xx,y1:top+28,x2:xx,y2:yy-7,stroke:'#7b91a8','stroke-width':1,'stroke-dasharray':'3 4'},marks);
+    const lx=clamp(xx,left+66,right-66),text='TIR '+pct(r,4);
+    svgEl('rect',{x:lx-65,y:top,width:130,height:24,rx:6,fill:'#eef4fb'},svg);
+    svgEl('text',{x:lx,y:top+16,'text-anchor':'middle',fill:'#142e49','font-size':12,'font-weight':650},svg,text);
+   }
+  });
+ }
+ if(state.step>=4){
+  [[state.rateA,model.interp.fa,'A'],[state.rateB,model.interp.fb,'B']].forEach(([x,y,label])=>{
+   if(x<xmin||x>xmax)return;
+   const xx=xscale(x),yy=yscale(y);
+   svgEl('rect',{x:xx-4.5,y:yy-4.5,width:9,height:9,fill:'#bb651f',stroke:'white','stroke-width':1},marks);
+   svgEl('text',{x:clamp(xx+10,left+8,right-12),y:clamp(yy-10,top+40,bottom-10),fill:'#9d4d13','font-weight':700,'font-size':12},svg,label);
+  });
+  if(model.interp.ok&&model.interp.value>=xmin&&model.interp.value<=xmax){
+   const xx=xscale(model.interp.value),yy=yscale(0);
+   svgEl('path',{d:'M'+(xx-4)+','+(yy-4)+'L'+(xx+4)+','+(yy+4)+'M'+(xx-4)+','+(yy+4)+'L'+(xx+4)+','+(yy-4),stroke:'#bb651f','stroke-width':2.2,fill:'none'},marks);
+  }
+ }
+ if(state.step>=2&&state.testRate>=xmin&&state.testRate<=xmax){
+  svgEl('circle',{cx:xscale(state.testRate),cy:yscale(model.van),r:7.5,fill:'none',stroke:'#2464ad','stroke-width':1.5},marks);
+ }
+ const hover=svgEl('g',{'pointer-events':'none',visibility:'hidden'},svg);
+ const guide=svgEl('line',{y1:top,y2:bottom,stroke:'#91a5ba','stroke-width':1,'stroke-dasharray':'3 3'},hover);
+ const dot=svgEl('circle',{r:5,fill:'#2464ad',stroke:'white','stroke-width':1.5},hover);
+ const hit=svgEl('rect',{x:left,y:top,width:right-left,height:bottom-top,fill:'transparent','pointer-events':'all','data-chart-hit':'true'},svg);
+ chartState={svg,width,height,left,right,top,bottom,xmin,xmax,xscale,yscale,hover,guide,dot};
+ function coord(event){const p=svg.createSVGPoint();p.x=event.clientX;p.y=event.clientY;const matrix=svg.getScreenCTM();return matrix?p.matrixTransform(matrix.inverse()):{x:left,y:top};}
+ function hoverAt(event){
+  if(state.step<2)return;
+  const p=coord(event),xx=clamp(p.x,xscale(xmin),xscale(xmax));
+  const rate=xmin+(xx-xscale(xmin))/(xscale(xmax)-xscale(xmin))*(xmax-xmin),van=M.npv(state.initial,state.flows,rate);
+  hover.setAttribute('visibility','visible');guide.setAttribute('x1',xx);guide.setAttribute('x2',xx);
+  dot.setAttribute('cx',xx);dot.setAttribute('cy',yscale(van));
+  const tip=$('chart-tooltip');
+  tip.innerHTML='<strong>Tasso '+esc(pct(rate,4))+'</strong>VAN '+esc(money(van,true))+'<br><span style="color:#c6d8e9">Tocca o clicca per verificare</span>';
+  tip.hidden=false;
+  const rootRect=wrap.getBoundingClientRect(),px=event.clientX-rootRect.left,py=event.clientY-rootRect.top;
+  tip.style.left=clamp(px+16,8,wrap.clientWidth-225)+'px';
+  tip.style.top=clamp(py-74,8,height-95)+'px';
+ }
+ hit.addEventListener('pointermove',hoverAt);
+ hit.addEventListener('pointerleave',()=>{hover.setAttribute('visibility','hidden');$('chart-tooltip').hidden=true;});
+ hit.addEventListener('click',event=>{
+  if(state.step<2)return;
+  const p=coord(event),rate=xmin+(clamp(p.x,xscale(xmin),xscale(xmax))-xscale(xmin))/(xscale(xmax)-xscale(xmin))*(xmax-xmin);
+  $('test-rate').value=rateValue(Number(rate.toFixed(4)));recalc();
+ });
+ $('chart-tooltip').hidden=true;
+ const zeroLegend=document.querySelector('.legend');
+ zeroLegend.children[0].hidden=state.step<3;zeroLegend.children[1].hidden=state.step<4;
+ const out=model.root!==null&&(model.root<xmin||model.root>xmax);
+ $('scale-status').textContent='Tassi '+pct(xmin,4)+' – '+pct(xmax,4)+'. Griglia VAN: '+money(ystep)+'.'+(out?' Il TIR è fuori da questo intervallo.':'');
+ document.querySelectorAll('[data-step]').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.step)===state.step?'true':'false'));
+ const van=model.van,point='('+pct(state.testRate,4)+'; '+money(van,true)+')';
+ const explanations={
+ 1:'<strong>Parti dagli assi.</strong> Sull’orizzontale trovi il tasso '+(state.frequency==='monthly'?'mensile':'annuo')+' in percentuale; sul verticale il VAN in euro. La linea orizzontale più marcata indica VAN = 0. Le tacche hanno intervalli regolari.',
+ 2:'<strong>Ogni riga della tabella diventa un punto.</strong> Per '+esc(point)+', raggiungi '+esc(pct(state.testRate,4))+' sull’asse orizzontale e '+(van>=0?'sali':'scendi')+' fino a '+esc(money(van))+'. Il cerchio evidenzia il tasso da verificare.',
+ 3:'<strong>Traccia la curva seguendo i punti.</strong> '+(model.root===null?'Per questi flussi non c’è un TIR reale ammissibile.':model.roots.length>1?'La curva ha più incroci o contatti con lo zero. Il TIR selezionato è '+esc(pct(model.root,4))+'.':'Il punto in cui la curva incontra VAN = 0 individua il TIR: '+esc(pct(model.root,4))+'.')+' Muovi il puntatore o tocca il grafico per esplorare altri tassi.',
+ 4:'<strong>Unisci A e B con una retta.</strong> '+(model.interp.ok?'Il suo incrocio con VAN = 0 dà la stima '+esc(pct(model.interp.value,4))+'. Il TIR della curva e la stima della retta possono differire.':'La retta scelta non racchiude uno zero. Modifica i tassi A e B nella sezione Interpolazione.')+' Tocca il grafico per verificare un punto.'
+ };
+ $('stage-explanation').innerHTML=explanations[state.step];
+}
+function toast(text){clearTimeout(toastTimer);$('toast').textContent=text;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,3500);}
+function download(name,content,type){
+ const blob=content instanceof Blob?content:new Blob([content],{type});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
+}
+function exportHTML(){
+ if(!model)return;
+ const clone=document.documentElement.cloneNode(true),saved={...state,minRate:model.domain[0],maxRate:model.domain[1]};
+ clone.querySelector('#initial-state').textContent=JSON.stringify(saved).replace(/</g,'\\u003c');
+ clone.querySelector('#chart-tooltip').hidden=true;clone.querySelector('#toast').hidden=true;
+ download('Laboratorio_TIR_e_VAN.html','<!doctype html>\n'+clone.outerHTML,'text/html;charset=utf-8');
+ toast('Pagina HTML scaricata con i tuoi parametri. Puoi aprirla anche senza connessione.');
+}
+function exportSVG(){
+ if(!model)return;
+ const copy=$('chart').cloneNode(true);
+ copy.setAttribute('width',chartState.width);copy.setAttribute('height',chartState.height);
+ download('Grafico_VAN_TIR.svg',new XMLSerializer().serializeToString(copy),'image/svg+xml;charset=utf-8');
+ toast('Grafico SVG scaricato: rimane nitido anche in stampa.');
+}
+function exportCSV(){
+ const rows=[['Tasso percentuale','Tasso decimale','VAN in euro'],...model.samples.map(r=>[String(r).replace('.',','),String(r/100).replace('.',','),M.npv(state.initial,state.flows,r).toFixed(2).replace('.',',')])];
+ download('Tabella_VAN_TIR.csv','\ufeff'+rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n'),'text/csv;charset=utf-8');
+}
+function chooseBracket(){
+ if(!model||model.root===null)return;
+ const r=model.root,others=model.roots.filter((_,i)=>i!==state.rootIndex);
+ let a=Math.floor(r),b=Math.ceil(r);
+ if(Math.abs(a-b)<1e-8){a=r-1;b=r+1;}
+ if(others.length){
+  const dist=Math.min(...others.map(x=>Math.abs(x-r)));
+  const half=Math.min(1,dist*.4);a=r-half;b=r+half;
+ }
+ a=Math.max(-99.999999,a);b=Math.min(1e6,b);
+ if(!(b>a)){toast('Il TIR è troppo vicino al limite del dominio per scegliere questi due tassi.');return;}
+ $('rate-a').value=rateValue(a);$('rate-b').value=rateValue(b);state.step=4;recalc();
+ if(model&&!model.interp.ok)toast('Questo TIR può essere tangente allo zero: non c’è cambio di segno tra A e B.');
+}
+$('initial').addEventListener('input',schedule);
+$('flow-list').addEventListener('input',schedule);
+for(const id of ['test-rate','rate-a','rate-b','min-rate','max-rate'])$(id).addEventListener('input',schedule);
+$('frequency').addEventListener('change',()=>{writeRows(rawFlows());recalc();});
+$('auto-scale').addEventListener('change',recalc);
+$('flow-list').addEventListener('click',event=>{
+ const b=event.target.closest('[data-remove]');if(!b)return;const v=rawFlows();if(v.length<2)return;v.splice(Number(b.dataset.remove),1);writeRows(v);recalc();
+});
+$('add-flow').addEventListener('click',()=>{const v=rawFlows();if(v.length>=20)return;v.push(0);writeRows(v);recalc();$('flow-'+(v.length-1)).focus();});
+$('example-btn').addEventListener('click',()=>{state={...DEFAULT,flows:DEFAULT.flows.slice()};fillForm(state);recalc();toast('Caricato l’esempio: 1.000 € oggi, 600 € alla fine di ciascuno dei due anni.');});
+$('root-select').addEventListener('change',()=>{state.rootIndex=Number($('root-select').value);recalc();});
+document.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{state.step=Number(b.dataset.step);recalc();}));
+function selectRow(event){
+ const row=event.target.closest('tr[data-rate]');if(!row)return;
+ if(event.type==='keydown'&&!['Enter',' '].includes(event.key))return;
+ if(event.type==='keydown')event.preventDefault();
+ $('test-rate').value=rateValue(Number(row.dataset.rate));recalc();
+}
+$('sample-body').addEventListener('click',selectRow);$('sample-body').addEventListener('keydown',selectRow);
+$('bracket-btn').addEventListener('click',chooseBracket);
+$('html-btn').addEventListener('click',exportHTML);$('svg-btn').addEventListener('click',exportSVG);$('csv-btn').addEventListener('click',exportCSV);
+$('print-btn').addEventListener('click',()=>window.print());
+let resizeTimer;
+const observer=new ResizeObserver(()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(model&&!$('results').classList.contains('paused'))drawChart();},80);});
+observer.observe($('chart-wrap'));
+window.addEventListener('beforeprint',()=>{if(model)drawChart();});
+try{
+ const saved=JSON.parse($('initial-state').textContent);
+ if(saved&&Array.isArray(saved.flows)&&saved.flows.length>=1&&saved.flows.length<=20){
+  state={...DEFAULT,...saved,frequency:saved.frequency==='monthly'?'monthly':'annual',step:[1,2,3,4].includes(saved.step)?saved.step:4};
+ }
+}catch(error){}
+fillForm(state);recalc();
+window.TIRLab=Object.freeze({getState:()=>JSON.parse(JSON.stringify(state)),getResults:()=>model?JSON.parse(JSON.stringify(model)):null});
+})();
+</script>
+</body>
+</html>
