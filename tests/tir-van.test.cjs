@@ -1,0 +1,22 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const html=fs.readFileSync(require('node:path').join(__dirname,'../tir-van/index.html'),'utf8');
+const scripts=[...html.matchAll(/<script(?:\s+id="([^"]+)")?[^>]*>([\s\S]*?)<\/script>/g)].filter(x=>x[1]!=='initial-state');
+for(const s of scripts)new vm.Script(s[2],{filename:s[1]||'script'});
+const context={window:{}};vm.createContext(context);
+vm.runInContext(scripts.find(x=>x[1]==='tir-math')[2],context);
+const M=context.window.TIRMath;
+const near=(actual,expected,tol=1e-7)=>assert.ok(Math.abs(actual-expected)<=tol,actual+' != '+expected);
+const roots=(initial,flows,expected)=>{const r=Array.from(M.irrs(initial,flows));assert.equal(r.length,expected.length,JSON.stringify({flows,r,expected}));r.forEach((v,i)=>near(v,expected[i],1e-6));for(const v of r)assert.ok(Math.abs(M.npv(initial,flows,v))<Math.max(.00001,initial*1e-9));};
+near(M.parse('1.234,56'),1234.56);near(M.parse('-24,57'),-24.57);near(M.parse('2.500',false),2.5);assert.ok(Number.isNaN(M.parse('')));
+near(M.npv(1000,[600,600],10),41.32231404958662);near(M.npv(1000,[600,600],15),-24.574669187145446);
+near(M.npv(1000,[600,600],0),200);assert.ok(Number.isNaN(M.npv(1000,[600,600],-100)));
+roots(1000,[600,600],[13.06623862918075]);
+roots(1000,[1100],[10]);roots(1000,[900],[-10]);roots(100,[0,0,133.1],[10]);
+roots(100,[230,-132],[10,20]);roots(100,[200,-100],[0]);roots(100,[100,-100],[]);
+roots(100,[0,0],[]);roots(100,[-100],[]);
+const interp=M.interpolate(1000,[600,600],10,15);assert.ok(interp.ok);near(interp.value,13.135372214319585);
+assert.ok(!M.interpolate(1000,[600,600],10,12).ok);assert.ok(!M.interpolate(1000,[600,600],10,10).ok);
+assert.equal(M.interpolate(1000,[1100],10,15).exact,true);
+const long=M.irrs(100000,Array(20).fill(12000));assert.equal(long.length,1);assert.ok(Math.abs(M.npv(100000,Array(20).fill(12000),long[0]))<1e-6);
+console.log('PASS: syntax, Italian numbers, VAN, unique/negative/multiple/tangent/no TIR, interpolation, 20 periods.');
+
